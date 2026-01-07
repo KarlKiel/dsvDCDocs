@@ -562,27 +562,73 @@ PropertyValue supports these types:
 
 ### 1. Build a Property Tree Model
 
-Maintain an in-memory representation of your property tree:
+Maintain separate in-memory representations for vDC and device property trees:
 
 ```python
-# Example property tree structure (pseudo-code)
-property_tree = {
-    "vdc": {
-        "name": "My vDC",
-        "dSUID": "abc123...",
-        "capabilities": {
-            "metering": False,
-            "identification": True
-        }
-    },
+# Example vDC property tree structure (pseudo-code)
+vdc_property_tree = {
+    "name": "My vDC",
+    "dSUID": "abc123...",
+    "modelName": "MyVdc",
+    "modelVersion": "1.0",
+    "vendorName": "MyCompany",
+    "implementationId": "x-mycompany-myvdc",
+    "zoneID": 0,
+    "capabilities": {
+        "metering": False,
+        "identification": True,
+        "dynamicDefinitions": False
+    }
+}
+
+# Example device property tree structure (pseudo-code)
+device_property_tree = {
     "name": "Device 1",
     "dSUID": "def456...",
     "model": "Model X",
-    "inputs": [
+    "modelVersion": "1.0",
+    "primaryGroup": 1,
+    "zoneID": 1,
+    "buttonInputDescriptions": [
         {
-            "inputType": 1,
             "name": "Button 1",
-            "state": 0
+            "dsIndex": 0,
+            "buttonID": 0,
+            "buttonType": 1
+        }
+    ],
+    "buttonInputSettings": [
+        {
+            "group": 1,
+            "mode": 0,
+            "function": 0
+        }
+    ],
+    "buttonInputStates": [
+        {
+            "value": False,
+            "clickType": 255,
+            "age": 0.0
+        }
+    ],
+    "outputDescription": {
+        "function": "light",
+        "outputUsage": 0
+    },
+    "channelDescriptions": [
+        {
+            "channelType": 1,
+            "channelId": "brightness",
+            "name": "Brightness",
+            "min": 0.0,
+            "max": 100.0,
+            "resolution": 0.1
+        }
+    ],
+    "channelStates": [
+        {
+            "value": 0.0,
+            "age": 0.0
         }
     ]
 }
@@ -594,7 +640,7 @@ Create functions to navigate your property tree:
 
 ```python
 def get_property_by_path(tree, path):
-    """Navigate tree using path like '/vdc/name'"""
+    """Navigate tree using path like '/name' or '/capabilities/metering'"""
     parts = path.strip('/').split('/')
     current = tree
     for part in parts:
@@ -729,7 +775,8 @@ query: [
   { "name": "model" },
   { "name": "modelVersion" },
   { "name": "primaryGroup" },
-  { "name": "output" }
+  { "name": "outputDescription" },
+  { "name": "channelDescriptions" }
 ]
 ```
 
@@ -737,15 +784,28 @@ Be prepared to handle this efficiently.
 
 ### Pattern 2: State Monitoring
 
-For input devices, vdSM may periodically query:
+For input devices, vdSM may periodically query button states:
 
 ```json
 query: [
   {
-    "name": "inputs",
+    "name": "buttonInputStates",
     "elements": [
-      { "name": "0", "elements": [{ "name": "state" }] },
-      { "name": "1", "elements": [{ "name": "state" }] }
+      { "name": "0", "elements": [{ "name": "value" }, { "name": "clickType" }] },
+      { "name": "1", "elements": [{ "name": "value" }, { "name": "clickType" }] }
+    ]
+  }
+]
+```
+
+Or for sensor values:
+
+```json
+query: [
+  {
+    "name": "sensorStates",
+    "elements": [
+      { "name": "0", "elements": [{ "name": "value" }] }
     ]
   }
 ]
