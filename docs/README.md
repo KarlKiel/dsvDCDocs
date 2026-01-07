@@ -34,6 +34,7 @@ This documentation is organized into the following sections:
 - Reading and writing properties
 - Property notifications and updates
 - Common properties for all entities
+- **NEW**: [Property Element Reference](./property-element-reference.md) - Complete reference catalog
 
 ### 5. [Virtual Device Connector (vDC)](./05-vdc-reference.md)
 - vDC level properties
@@ -51,6 +52,12 @@ This documentation is organized into the following sections:
 - Scenes
 - Actions
 - States and properties
+
+### Property Element Reference
+- **[Complete Property Element Reference](./property-element-reference.md)**
+- Detailed property catalog with interactive navigation
+- vDC and device property trees
+- All property element descriptions from the original API
 
 ### 8. [API Operations](./08-api-operations.md)
 - Scene operations (call, save, undo)
