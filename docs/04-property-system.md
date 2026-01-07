@@ -61,86 +61,214 @@ A PropertyElement is **either**:
 
 ### Hierarchical Representation
 
-**vDC Level Property Tree** (when querying a vDC entity):
+The property tree structure differs depending on which entity (vDC or device) you are querying. Each entity has its own set of properties at the root level.
+
+**Notation**:
+- `propertyName` - Property element containing a value
+- `[propertyName]` - Property element containing a list of child elements (container/array)
+
+**vDC Level Property Tree** (when querying a vDC entity using the vDC's dSUID):
 
 ```
-/ (root - vDC properties)
-├── name                     [string value]
-├── dSUID                    [string value]
-├── modelName                [string value]
-├── modelVersion             [string value]
-├── vendorName               [string value]
-├── implementationId         [string value]
-├── zoneID                   [number value]
-└── capabilities             [container]
-    ├── metering             [bool value]
-    ├── identification       [bool value]
-    └── dynamicDefinitions   [bool value]
+/ (root - all properties belong to the vDC)
+├── dSUID (string)
+├── displayId (string, optional)
+├── type (string) = "vDC"
+├── model (string)
+├── modelVersion (string, optional)
+├── modelUID (string)
+├── hardwareVersion (string, optional)
+├── hardwareGuid (string, optional)
+├── hardwareModelGuid (string, optional)
+├── vendorName (string, optional)
+├── vendorGuid (string, optional)
+├── oemGuid (string, optional)
+├── oemModelGuid (string, optional)
+├── configURL (string, optional)
+├── deviceIcon16 (binary, optional)
+├── deviceIconName (string, optional)
+├── name (string, read/write)
+├── deviceClass (string, optional)
+├── deviceClassVersion (string, optional)
+├── active (boolean, optional)
+├── implementationId (string)
+├── zoneID (uint64, read/write)
+└── [capabilities]
+    ├── metering (boolean)
+    ├── identification (boolean)
+    └── dynamicDefinitions (boolean)
 ```
 
-**vdSD (Device) Level Property Tree** (when querying a device entity):
+**vdSD (Device) Level Property Tree** (when querying a device entity using the device's dSUID):
 
 ```
-/ (root - device properties)
-├── name                     [string value]
-├── dSUID                    [string value]
-├── model                    [string value]
-├── modelVersion             [string value]
-├── vendorName               [string value]
-├── primaryGroup             [number value]
-├── zoneID                   [number value]
-├── buttonInputDescriptions  [array/container]
-│   ├── [0]                  [container]
-│   │   ├── name             [string value]
-│   │   ├── dsIndex          [number value]
-│   │   ├── buttonID         [number value]
-│   │   └── buttonType       [number value]
-│   └── [1]                  [container]
-│       └── ...
-├── buttonInputSettings      [array/container]
-│   ├── [0]                  [container]
-│   │   ├── group            [number value]
-│   │   ├── mode             [number value]
-│   │   └── function         [number value]
-│   └── ...
-├── buttonInputStates        [array/container]
-│   ├── [0]                  [container]
-│   │   ├── value            [bool value]
-│   │   ├── clickType        [number value]
-│   │   └── age              [number value]
-│   └── ...
-├── sensorDescriptions       [array/container]
-│   ├── [0]                  [container]
-│   │   ├── name             [string value]
-│   │   ├── sensorType       [number value]
-│   │   └── sensorUsage      [number value]
-│   └── ...
-├── sensorStates             [array/container]
-│   ├── [0]                  [container]
-│   │   ├── value            [number value]
-│   │   └── age              [number value]
-│   └── ...
-├── outputDescription        [container]
-│   ├── function             [string value]
-│   └── outputUsage          [number value]
-├── channelDescriptions      [array/container]
-│   ├── [0]                  [container]
-│   │   ├── channelType      [number value]
-│   │   ├── channelId        [string value]
-│   │   ├── name             [string value]
-│   │   ├── min              [number value]
-│   │   └── max              [number value]
-│   └── ...
-├── channelStates            [array/container]
-│   ├── [0]                  [container]
-│   │   └── value            [number value]
-│   └── ...
-└── scenes                   [array/container]
-    ├── [0]                  [container]
-    │   ├── sceneNo          [number value]
-    │   └── name             [string value]
-    └── ...
+/ (root - all properties belong to the device)
+├── dSUID (string)
+├── displayId (string, optional)
+├── type (string) = "vdSD"
+├── model (string)
+├── modelVersion (string, optional)
+├── modelUID (string)
+├── hardwareVersion (string, optional)
+├── hardwareGuid (string, optional)
+├── hardwareModelGuid (string, optional)
+├── vendorName (string, optional)
+├── vendorGuid (string, optional)
+├── oemGuid (string, optional)
+├── oemModelGuid (string, optional)
+├── configURL (string, optional)
+├── deviceIcon16 (binary, optional)
+├── deviceIconName (string, optional)
+├── name (string, read/write)
+├── deviceClass (string, optional)
+├── deviceClassVersion (string, optional)
+├── active (boolean, optional)
+├── primaryGroup (uint64)
+├── zoneID (uint64, read/write)
+│
+├── [buttonInputDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── name (string)
+│       ├── dsIndex (uint64)
+│       ├── supportsLocalKeyMode (boolean)
+│       ├── buttonID (uint64, optional)
+│       ├── buttonType (uint64)
+│       └── buttonElementID (uint64)
+│
+├── [buttonInputSettings] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── group (uint64, read/write)
+│       ├── function (uint64, read/write)
+│       ├── mode (uint64, read/write)
+│       ├── channel (uint64, read/write)
+│       ├── setsLocalPriority (boolean, read/write)
+│       └── callsPresent (boolean, read/write)
+│
+├── [buttonInputStates] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── value (boolean or NULL)
+│       ├── clickType (uint64)
+│       ├── age (double or NULL)
+│       ├── error (uint64)
+│       ├── actionId (uint64, optional - alternative to value/clickType)
+│       └── actionMode (uint64, optional - alternative to value/clickType)
+│
+├── [binaryInputDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── name (string)
+│       ├── dsIndex (uint64)
+│       ├── inputType (uint64)
+│       └── inputUsage (uint64)
+│
+├── [binaryInputSettings] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── group (uint64, read/write)
+│       ├── minPushInterval (uint64, read/write)
+│       └── changesOnlyInterval (uint64, read/write)
+│
+├── [binaryInputStates] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── value (boolean or NULL)
+│       ├── extendedValue (uint64 or NULL)
+│       ├── age (double or NULL)
+│       └── error (uint64)
+│
+├── [sensorDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── name (string)
+│       ├── dsIndex (uint64)
+│       ├── sensorType (uint64)
+│       ├── sensorUsage (uint64)
+│       ├── min (double)
+│       ├── max (double)
+│       ├── resolution (double)
+│       ├── updateInterval (double)
+│       └── aliveSignInterval (double)
+│
+├── [sensorSettings] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── group (uint64, read/write)
+│
+├── [sensorStates] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── value (double or NULL)
+│       ├── age (double or NULL)
+│       └── error (uint64)
+│
+├── [outputDescription] (optional, for devices with output)
+│   ├── function (string)
+│   └── outputUsage (uint64)
+│
+├── [outputSettings] (optional)
+│   ├── mode (uint64, read/write)
+│   └── ... (device-specific settings)
+│
+├── [outputState] (optional)
+│   └── ... (device-specific state info)
+│
+├── [channelDescriptions] (optional, for devices with output)
+│   └── [0], [1], ... [N-1]
+│       ├── name (string)
+│       ├── channelType (uint64)
+│       ├── dsIndex (uint64)
+│       ├── min (double)
+│       ├── max (double)
+│       └── resolution (double)
+│
+├── [channelSettings] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── (currently no standard settings defined)
+│
+├── [channelStates] (optional)
+│   └── [0], [1], ... [N-1]
+│       ├── value (double)
+│       └── age (double or NULL)
+│
+├── [scenes] (optional, for devices with output)
+│   └── [0], [5], [17], ... (named by scene number)
+│       └── [channels]
+│           └── [0], [1], ... [N-1] (by channel index)
+│               ├── value (double, read/write)
+│               ├── dontCare (boolean, read/write)
+│               └── automatic (boolean, read/write)
+│
+├── [deviceActionDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (action description properties)
+│
+├── [customActions] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (custom action properties)
+│
+├── [deviceStateDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (state description properties)
+│
+├── [deviceStates] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (state values)
+│
+├── [devicePropertyDescriptions] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (property descriptions)
+│
+├── [deviceProperties] (optional)
+│   └── [0], [1], ... [N-1]
+│       └── ... (property values)
+│
+└── [deviceEventDescriptions] (optional)
+    └── [0], [1], ... [N-1]
+        └── ... (event descriptions)
 ```
+
+**Important Notes**:
+
+1. **No "vdc" or "device" containers**: Properties are directly at the root level when querying an entity.
+2. **dSUID in query**: You specify which entity to query using the dSUID parameter in GetProperty.
+3. **Common properties**: Many properties (Section 2 in original API) are common to both vDC and vdSD entities.
+4. **Optional properties**: Many properties are optional and may not be present in all implementations.
+5. **Array indices**: Array elements are named by their index as strings: "0", "1", "2", etc.
+6. **Scene naming**: Scene elements are named by scene number (e.g., "0", "5", "17"), not sequential indices.
 
 ### Property Paths
 
