@@ -462,7 +462,7 @@ See [API Operations](./08-api-operations.md) for details on:
 ```protobuf
 vdsm_NotificationSetOutputChannelValue {
     dSUID: ["DEVICE_DSUID"]
-    channelId: "brightness"
+    channel: 0       // Channel index (0 = default channel)
     value: 75.0
     apply_now: true
 }
@@ -473,9 +473,9 @@ vdsm_NotificationSetOutputChannelValue {
 ```protobuf
 vdsm_NotificationDimChannel {
     dSUID: ["DEVICE_DSUID"]
-    channelId: "brightness"
-    mode: 1      // Start dimming
-    area: 1      // Up
+    channel: 0       // Channel index (0 = default channel)
+    mode: 1          // Start dimming
+    area: 1          // Up
 }
 ```
 

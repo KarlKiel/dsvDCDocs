@@ -661,7 +661,6 @@ When querying a device with outputs:
 | `/outputDescription/outputUsage` | uint | Output usage type |
 | `/channelDescriptions` | array | Array of channel descriptors |
 | `/channelDescriptions/N/channelType` | uint | Channel type |
-| `/channelDescriptions/N/channelId` | string | Channel identifier |
 | `/channelDescriptions/N/name` | string | Channel name |
 | `/channelDescriptions/N/min` | double | Minimum value |
 | `/channelDescriptions/N/max` | double | Maximum value |
@@ -675,9 +674,11 @@ When querying a device with scene support:
 
 | Path | Type | Description |
 |------|------|-------------|
-| `/scenes` | array | Scene configurations |
-| `/scenes/N/sceneNo` | uint | Scene number |
-| `/scenes/N/name` | string | Scene name |
+| `/scenes` | array | Scene configurations (elements named by scene number) |
+| `/scenes/N/channels` | array | Channel values for scene N |
+| `/scenes/N/channels/M/value` | double | Value for channel M (read/write) |
+| `/scenes/N/channels/M/dontCare` | bool | Don't apply this channel (read/write) |
+| `/scenes/N/channels/M/automatic` | bool | Activate automatic control (read/write) |
 
 ## Property Types
 
@@ -763,7 +764,6 @@ device_property_tree = {
     "channelDescriptions": [
         {
             "channelType": 1,
-            "channelId": "brightness",
             "name": "Brightness",
             "min": 0.0,
             "max": 100.0,
