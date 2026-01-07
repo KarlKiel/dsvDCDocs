@@ -62,7 +62,7 @@ Indicates device function/type:
   "vendorName": "Philips",
   "primaryGroup": 1,  // Yellow - Light
   "zoneID": 1,        // Living Room
-  "iconName": "light_color"
+  "deviceIconName": "light_color"
 }
 ```
 

@@ -119,7 +119,7 @@ class Vdc:
         return {
             "name": self.name,
             "dSUID": self.dsuid,
-            "modelName": "MyVdc",
+            "model": "MyVdc",
             # ... more properties
         }
 
@@ -528,7 +528,7 @@ class SimpleLightVdc:
         return {
             "name": "Simple Light vDC",
             "dSUID": self.dsuid,
-            "modelName": "SimpleLightVdc",
+            "model": "SimpleLightVdc",
             "modelVersion": "1.0",
             "vendorName": "MyCompany",
             "capabilities": {
