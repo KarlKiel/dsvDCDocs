@@ -17,12 +17,12 @@ All vDCs must provide these common properties (when querying with the vDC's dSUI
 |---------------|------|-----|-------------|
 | `/name` | string | R/W | Human-readable vDC name |
 | `/dSUID` | string | R | Unique vDC identifier |
-| `/modelName` | string | R | vDC model/type name |
+| `/model` | string | R | vDC model/type name |
 | `/modelVersion` | string | R | vDC version |
 | `/vendorName` | string | R | Vendor/manufacturer |
-| `/oemModelGUID` | string | R | OEM model identifier |
+| `/oemModelGuid` | string | R | OEM model identifier |
 | `/configURL` | string | R | Configuration web UI URL (optional) |
-| `/iconName` | string | R | Icon identifier |
+| `/deviceIconName` | string | R | Icon identifier |
 | `/implementationId` | string | R | Implementation identifier |
 | `/zoneID` | uint | R/W | Default zone for the vDC |
 
@@ -41,10 +41,10 @@ The `/capabilities` container describes what the vDC supports:
 {
   "name": "Philips Hue vDC",
   "dSUID": "ABCD1234567890ABCD1234567890ABCD00",
-  "modelName": "HueVdc",
+  "model": "HueVdc",
   "modelVersion": "2.1.0",
   "vendorName": "MyCompany",
-  "oemModelGUID": "hue-vdc-v2",
+  "oemModelGuid": "hue-vdc-v2",
   "implementationId": "x-mycompany-huevdc",
   "zoneID": 0,
   "capabilities": {
@@ -80,7 +80,7 @@ After announcement, vdSM will query vDC properties:
 {
   "query": [
     { "name": "name" },
-    { "name": "modelName" },
+    { "name": "model" },
     { "name": "capabilities" }
   ]
 }

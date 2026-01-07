@@ -544,10 +544,10 @@ When querying a vDC entity (using the vDC's dSUID):
 |------|------|-------------|
 | `/name` | string | Human-readable vDC name |
 | `/dSUID` | string | Unique identifier for the vDC |
-| `/modelName` | string | Model/type of the vDC |
+| `/model` | string | Model/type of the vDC |
 | `/modelVersion` | string | Version of the vDC implementation |
 | `/vendorName` | string | Vendor/manufacturer name |
-| `/oemModelGUID` | string | OEM model identifier |
+| `/oemModelGuid` | string | OEM model identifier |
 | `/implementationId` | string | Implementation identifier |
 | `/zoneID` | uint | Default zone for the vDC |
 | `/capabilities` | object | vDC capabilities container |
@@ -567,14 +567,12 @@ When querying a device (vdSD) entity (using the device's dSUID):
 | `/modelVersion` | string | Device model version |
 | `/modelUID` | string | Model unique identifier |
 | `/vendorName` | string | Device vendor |
-| `/oemModelGUID` | string | OEM model GUID |
+| `/oemModelGuid` | string | OEM model GUID |
 | `/hardwareVersion` | string | Hardware version |
-| `/hardwareGUID` | string | Hardware GUID |
-| `/serialNumber` | string | Device serial number |
-| `/softwareVersion` | string | Device software version |
+| `/hardwareGuid` | string | Hardware GUID |
+| `/deviceIconName` | string | Icon identifier for UI |
 | `/primaryGroup` | uint | Primary functional group (color) |
 | `/zoneID` | uint | Zone assignment |
-| `/iconName` | string | Icon identifier for UI |
 
 ### Button Input Properties
 
