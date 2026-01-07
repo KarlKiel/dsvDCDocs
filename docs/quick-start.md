@@ -4,6 +4,8 @@
 
 This guide will help you get started with the digitalSTROM vDC-API quickly. Whether you're building a new vDC host or integrating with an existing one, this guide provides the essential steps and code examples.
 
+> **Note:** Code examples in this guide are simplified for clarity and educational purposes. In production code, follow best practices such as placing all imports at the top of files, adding comprehensive error handling, and implementing proper logging.
+
 ## Prerequisites
 
 Before you begin:

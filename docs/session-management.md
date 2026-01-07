@@ -64,7 +64,7 @@ A vDC session represents the connection between a vdSM (virtual digitalSTROM Met
 
 The vDC host should check the `api_version` provided by the vdSM:
 
-```
+```text
 If api_version is not supported:
     Return ERR_INCOMPATIBLE_API
     vdSM should cease connection attempts
