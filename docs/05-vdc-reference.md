@@ -11,44 +11,46 @@ For property system basics, see [Property System](./04-property-system.md).
 
 ### Common Properties
 
-All vDCs must provide these common properties:
+All vDCs must provide these common properties (when querying with the vDC's dSUID):
 
 | Property Path | Type | R/W | Description |
 |---------------|------|-----|-------------|
-| `/vdc/name` | string | R/W | Human-readable vDC name |
-| `/vdc/dSUID` | string | R | Unique vDC identifier |
-| `/vdc/modelName` | string | R | vDC model/type name |
-| `/vdc/modelVersion` | string | R | vDC version |
-| `/vdc/vendorName` | string | R | Vendor/manufacturer |
-| `/vdc/oemModelGUID` | string | R | OEM model identifier |
-| `/vdc/configURL` | string | R | Configuration web UI URL (optional) |
-| `/vdc/iconName` | string | R | Icon identifier |
+| `/name` | string | R/W | Human-readable vDC name |
+| `/dSUID` | string | R | Unique vDC identifier |
+| `/modelName` | string | R | vDC model/type name |
+| `/modelVersion` | string | R | vDC version |
+| `/vendorName` | string | R | Vendor/manufacturer |
+| `/oemModelGUID` | string | R | OEM model identifier |
+| `/configURL` | string | R | Configuration web UI URL (optional) |
+| `/iconName` | string | R | Icon identifier |
+| `/implementationId` | string | R | Implementation identifier |
+| `/zoneID` | uint | R/W | Default zone for the vDC |
 
 ### vDC Capabilities
 
-The `/vdc/capabilities` container describes what the vDC supports:
+The `/capabilities` container describes what the vDC supports:
 
 | Property Path | Type | Description |
 |---------------|------|-------------|
-| `/vdc/capabilities/metering` | bool | Supports power/energy metering |
-| `/vdc/capabilities/identification` | bool | Can identify vDC host hardware |
-| `/vdc/capabilities/dynamicDefinitions` | bool | Supports dynamic device definitions |
+| `/capabilities/metering` | bool | Supports power/energy metering |
+| `/capabilities/identification` | bool | Can identify vDC host hardware |
+| `/capabilities/dynamicDefinitions` | bool | Supports dynamic device definitions |
 
 **Example vDC Properties**:
 ```json
 {
-  "vdc": {
-    "name": "Philips Hue vDC",
-    "dSUID": "ABCD1234567890ABCD1234567890ABCD00",
-    "modelName": "HueVdc",
-    "modelVersion": "2.1.0",
-    "vendorName": "MyCompany",
-    "oemModelGUID": "hue-vdc-v2",
-    "capabilities": {
-      "metering": false,
-      "identification": false,
-      "dynamicDefinitions": false
-    }
+  "name": "Philips Hue vDC",
+  "dSUID": "ABCD1234567890ABCD1234567890ABCD00",
+  "modelName": "HueVdc",
+  "modelVersion": "2.1.0",
+  "vendorName": "MyCompany",
+  "oemModelGUID": "hue-vdc-v2",
+  "implementationId": "x-mycompany-huevdc",
+  "zoneID": 0,
+  "capabilities": {
+    "metering": false,
+    "identification": false,
+    "dynamicDefinitions": false
   }
 }
 ```
@@ -73,16 +75,18 @@ vdc_SendAnnounceVdc {
 
 After announcement, vdSM will query vDC properties:
 
-**Typical query**:
+**Typical query** (sent to vDC's dSUID):
 ```json
 {
   "query": [
-    { "name": "vdc" }
+    { "name": "name" },
+    { "name": "modelName" },
+    { "name": "capabilities" }
   ]
 }
 ```
 
-**Expected response**: All vDC properties
+**Expected response**: Requested vDC properties
 
 ### 3. Device Management
 
@@ -191,9 +195,7 @@ Optionally provide a web UI for configuration:
 
 ```json
 {
-  "vdc": {
-    "configURL": "http://192.168.1.100:8080/config"
-  }
+  "configURL": "http://192.168.1.100:8080/config"
 }
 ```
 

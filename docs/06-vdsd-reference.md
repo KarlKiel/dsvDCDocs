@@ -10,22 +10,32 @@ For complete property system documentation, see [Property System](./04-property-
 
 ### Essential Properties
 
-All devices must provide these core properties:
+All devices must provide these core properties (common properties from Section 2 of original API):
 
 | Property Path | Type | R/W | Description |
 |---------------|------|-----|-------------|
 | `/name` | string | R/W | Device name (user-configurable) |
-| `/dSUID` | string | R | Unique device identifier |
+| `/dSUID` | string | R | Unique device identifier (34 hex characters) |
+| `/displayId` | string | R | Human-readable ID printed on device (optional) |
+| `/type` | string | R | Always "vdSD" for devices |
 | `/model` | string | R | Device model name |
 | `/modelVersion` | string | R | Model version |
-| `/modelUID` | string | R | Model unique identifier |
-| `/vendorName` | string | R | Device vendor |
-| `/hardwareVersion` | string | R | Hardware version |
-| `/serialNumber` | string | R | Serial number |
-| `/softwareVersion` | string | R | Software/firmware version |
+| `/modelUID` | string | R | Model unique identifier (functional model) |
+| `/hardwareVersion` | string | R | Hardware version (optional) |
+| `/hardwareGuid` | string | R | Hardware GUID in URN format (optional) |
+| `/hardwareModelGuid` | string | R | Hardware model GUID (optional) |
+| `/vendorName` | string | R | Device vendor (optional) |
+| `/vendorGuid` | string | R | Vendor GUID in URN format (optional) |
+| `/oemGuid` | string | R | OEM product GUID (optional) |
+| `/oemModelGuid` | string | R | OEM model GUID/GTIN (optional) |
+| `/configURL` | string | R | Configuration URL (optional) |
+| `/deviceIcon16` | binary | R | 16x16 pixel PNG icon (optional) |
+| `/deviceIconName` | string | R | Icon filename-safe name (optional) |
+| `/deviceClass` | string | R | Device class profile name (optional) |
+| `/deviceClassVersion` | string | R | Device class profile version (optional) |
+| `/active` | bool | R | Operation state of device (optional) |
 | `/primaryGroup` | uint | R | Primary functional group (color) |
 | `/zoneID` | uint | R/W | Zone assignment |
-| `/iconName` | string | R | Icon for UI display |
 
 ### Functional Group (primaryGroup)
 
@@ -85,8 +95,10 @@ vdSM queries device properties:
     { "name": "name" },
     { "name": "model" },
     { "name": "primaryGroup" },
-    { "name": "output" },
-    { "name": "inputs" }
+    { "name": "outputDescription" },
+    { "name": "channelDescriptions" },
+    { "name": "buttonInputDescriptions" },
+    { "name": "sensorDescriptions" }
   ]
 }
 ```
@@ -136,14 +148,18 @@ vdsm_SendRemove {
 Devices with controllable outputs (lights, blinds, etc.).
 
 **Required properties**:
-- `/output` container with channel definitions
+- `/outputDescription` - Output description
+- `/channelDescriptions` - Array of channel descriptors
+- `/channelStates` - Array of channel states
 
 ### Input Devices
 
 Devices with inputs (buttons, sensors).
 
-**Required properties**:
-- `/inputs` array with input definitions
+**Required properties** (one or more of):
+- `/buttonInputDescriptions`, `/buttonInputSettings`, `/buttonInputStates` - For button inputs
+- `/binaryInputDescriptions`, `/binaryInputSettings`, `/binaryInputStates` - For binary inputs
+- `/sensorDescriptions`, `/sensorSettings`, `/sensorStates` - For sensor inputs
 
 ### Hybrid Devices
 
@@ -153,18 +169,42 @@ Devices with both inputs and outputs.
 
 ## Output Channels
 
-Devices with outputs must define channels in `/output/channels`:
+Devices with outputs have several related property groups:
 
-### Channel Properties
+### Output Description
+
+The `/outputDescription` container provides invariable output properties:
 
 | Property | Type | Description |
 |----------|------|-------------|
-| `channelType` | uint | Channel type (1=brightness, 2=hue, etc.) |
-| `channelId` | string | Channel identifier (API v3+) |
-| `name` | string | Human-readable name |
-| `min` | double | Minimum value |
-| `max` | double | Maximum value |
-| `resolution` | double | Resolution/step size |
+| `/outputDescription/function` | string | Output function (e.g., "light", "shadow") |
+| `/outputDescription/outputUsage` | uint | Output usage type |
+
+### Channel Descriptions
+
+The `/channelDescriptions` array contains invariable properties for each channel:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `/channelDescriptions/N/name` | string | Human-readable channel name |
+| `/channelDescriptions/N/channelType` | uint | Channel type (see table below) |
+| `/channelDescriptions/N/dsIndex` | uint | Index 0..N-1 (index 0 is default channel) |
+| `/channelDescriptions/N/min` | double | Minimum value |
+| `/channelDescriptions/N/max` | double | Maximum value |
+| `/channelDescriptions/N/resolution` | double | Resolution/step size |
+
+### Channel Settings
+
+The `/channelSettings` array contains per-channel settings (currently no standard settings defined).
+
+### Channel States
+
+The `/channelStates` array contains current channel values (read-only, use setOutputChannelValue to change):
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `/channelStates/N/value` | double | Current channel value |
+| `/channelStates/N/age` | double | Age in seconds (NULL if not yet applied) |
 
 ### Channel Types
 
@@ -181,66 +221,168 @@ Devices with outputs must define channels in `/output/channels`:
 
 ```json
 {
-  "output": {
-    "channels": [
-      {
-        "channelType": 1,
-        "channelId": "brightness",
-        "name": "Brightness",
-        "min": 0.0,
-        "max": 100.0,
-        "resolution": 0.1
-      },
-      {
-        "channelType": 2,
-        "channelId": "hue",
-        "name": "Hue",
-        "min": 0.0,
-        "max": 360.0,
-        "resolution": 1.0
-      }
-    ]
-  }
+  "outputDescription": {
+    "function": "light",
+    "outputUsage": 0
+  },
+  "channelDescriptions": [
+    {
+      "name": "Brightness",
+      "channelType": 1,
+      "dsIndex": 0,
+      "min": 0.0,
+      "max": 100.0,
+      "resolution": 0.1
+    },
+    {
+      "name": "Hue",
+      "channelType": 2,
+      "dsIndex": 1,
+      "min": 0.0,
+      "max": 360.0,
+      "resolution": 1.0
+    }
+  ],
+  "channelStates": [
+    {
+      "value": 0.0,
+      "age": 0.0
+    },
+    {
+      "value": 0.0,
+      "age": 0.0
+    }
+  ]
 }
 ```
 
 ## Input Definitions
 
-Devices with inputs define them in `/inputs` array:
+Devices with inputs use separate property groups for each input type:
 
-### Input Types
+### Button Inputs
 
-1. **Button Inputs**: User buttons/switches
-2. **Binary Inputs**: On/off sensors (door contacts)
-3. **Sensor Inputs**: Analog sensors (temperature, humidity)
+Button inputs use three property arrays:
 
-### Input Properties
+**`/buttonInputDescriptions`** - Invariable properties:
+- `/buttonInputDescriptions/N/name` - Button name
+- `/buttonInputDescriptions/N/dsIndex` - Index 0..N-1
+- `/buttonInputDescriptions/N/supportsLocalKeyMode` - Can be local button
+- `/buttonInputDescriptions/N/buttonID` - Physical button ID (optional)
+- `/buttonInputDescriptions/N/buttonType` - Type (0=undefined, 1=single, 2=2-way, etc.)
+- `/buttonInputDescriptions/N/buttonElementID` - Element of multi-contact button
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `inputType` | uint | 1=button, 2=binary, 3=sensor |
-| `name` | string | Input name |
-| `state` | varies | Current state |
-| `age` | uint | Seconds since last update |
+**`/buttonInputSettings`** - Configurable settings:
+- `/buttonInputSettings/N/group` - dS group number
+- `/buttonInputSettings/N/function` - Button function (0=device, 5=room, etc.)
+- `/buttonInputSettings/N/mode` - Mode (0=standard, 2=presence, 255=inactive, etc.)
+- `/buttonInputSettings/N/channel` - Channel to control
+- `/buttonInputSettings/N/setsLocalPriority` - Sets local priority flag
+- `/buttonInputSettings/N/callsPresent` - Calls present if absent
 
-### Example Input Definition
+**`/buttonInputStates`** - Current state:
+- `/buttonInputStates/N/value` - Boolean state or NULL (pressed/released)
+- `/buttonInputStates/N/clickType` - Click type (0=tip_1x, 1=tip_2x, 4=hold_start, 255=idle, etc.)
+- `/buttonInputStates/N/age` - Age in seconds (or NULL)
+- `/buttonInputStates/N/error` - Error state (0=ok, 1=open circuit, etc.)
 
+### Binary Inputs
+
+Binary inputs use three property arrays:
+
+**`/binaryInputDescriptions`** - Invariable properties:
+- `/binaryInputDescriptions/N/name` - Input name
+- `/binaryInputDescriptions/N/dsIndex` - Index 0..N-1
+- `/binaryInputDescriptions/N/inputType` - 0=poll only, 1=detects changes
+- `/binaryInputDescriptions/N/inputUsage` - Usage type enum
+
+**`/binaryInputSettings`** - Configurable settings (similar to button settings)
+
+**`/binaryInputStates`** - Current state:
+- `/binaryInputStates/N/value` - Boolean state or NULL
+- `/binaryInputStates/N/extendedValue` - Extended value (replaces value if present)
+- `/binaryInputStates/N/age` - Age in seconds
+- `/binaryInputStates/N/error` - Error state
+
+### Sensor Inputs
+
+Sensor inputs use three property arrays:
+
+**`/sensorDescriptions`** - Invariable properties:
+- `/sensorDescriptions/N/name` - Sensor name
+- `/sensorDescriptions/N/dsIndex` - Index 0..N-1
+- `/sensorDescriptions/N/sensorType` - Type (1=temperature, 2=humidity, 3=illumination, etc.)
+- `/sensorDescriptions/N/sensorUsage` - Usage type
+- `/sensorDescriptions/N/min` - Minimum value
+- `/sensorDescriptions/N/max` - Maximum value
+- `/sensorDescriptions/N/resolution` - Resolution
+- `/sensorDescriptions/N/updateInterval` - Update interval in seconds
+- `/sensorDescriptions/N/aliveSignInterval` - Alive sign interval in seconds
+
+**`/sensorSettings`** - Configurable settings
+
+**`/sensorStates`** - Current readings:
+- `/sensorStates/N/value` - Sensor value (double or NULL)
+- `/sensorStates/N/age` - Age in seconds
+- `/sensorStates/N/error` - Error state
+
+### Example Input Definitions
+
+**Button Input Example**:
 ```json
 {
-  "inputs": [
+  "buttonInputDescriptions": [
     {
-      "inputType": 1,
       "name": "Wall Button",
-      "state": 0,
-      "age": 0
-    },
+      "dsIndex": 0,
+      "supportsLocalKeyMode": true,
+      "buttonID": 0,
+      "buttonType": 1,
+      "buttonElementID": 0
+    }
+  ],
+  "buttonInputSettings": [
     {
-      "inputType": 3,
+      "group": 1,
+      "function": 0,
+      "mode": 0,
+      "channel": 0,
+      "setsLocalPriority": false,
+      "callsPresent": false
+    }
+  ],
+  "buttonInputStates": [
+    {
+      "value": false,
+      "clickType": 255,
+      "age": 0.0,
+      "error": 0
+    }
+  ]
+}
+```
+
+**Sensor Input Example**:
+```json
+{
+  "sensorDescriptions": [
+    {
       "name": "Temperature",
-      "state": 21.5,
-      "age": 10,
-      "sensorType": 1,  // Temperature
-      "sensorUsage": 0  // Room temperature
+      "dsIndex": 0,
+      "sensorType": 1,
+      "sensorUsage": 0,
+      "min": -40.0,
+      "max": 80.0,
+      "resolution": 0.1,
+      "updateInterval": 60,
+      "aliveSignInterval": 300
+    }
+  ],
+  "sensorStates": [
+    {
+      "value": 21.5,
+      "age": 10.0,
+      "error": 0
     }
   ]
 }
@@ -252,23 +394,54 @@ Devices support scenes for storing and recalling states.
 
 ### Scene Configuration
 
+The `/scenes` array contains scene configurations. Each scene element has:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `/scenes/N` | container | Scene N (named by scene number) |
+| `/scenes/N/channels` | array | Channel values for this scene |
+| `/scenes/N/channels/M/value` | double | Value for channel M |
+| `/scenes/N/channels/M/dontCare` | bool | If true, don't apply this channel value |
+| `/scenes/N/channels/M/automatic` | bool | If true, activate automatic control |
+
+**Note**: Scene elements are named by scene number (e.g., "0", "5", "17"), not sequential indices.
+
 Stored in `/scenes` array:
 
 ```json
 {
   "scenes": [
     {
-      "sceneNo": 5,
-      "name": "Bright",
+      "name": "0",  // Scene number as string
       "channels": [
-        { "channelId": "brightness", "value": 100.0 }
+        {
+          "name": "0",  // Channel index
+          "value": 0.0,
+          "dontCare": false,
+          "automatic": false
+        }
       ]
     },
     {
-      "sceneNo": 17,
-      "name": "Dimmed",
+      "name": "5",  // Scene 5
       "channels": [
-        { "channelId": "brightness", "value": 30.0 }
+        {
+          "name": "0",
+          "value": 100.0,
+          "dontCare": false,
+          "automatic": false
+        }
+      ]
+    },
+    {
+      "name": "17",  // Scene 17
+      "channels": [
+        {
+          "name": "0",
+          "value": 30.0,
+          "dontCare": false,
+          "automatic": false
+        }
       ]
     }
   ]
@@ -289,7 +462,7 @@ See [API Operations](./08-api-operations.md) for details on:
 ```protobuf
 vdsm_NotificationSetOutputChannelValue {
     dSUID: ["DEVICE_DSUID"]
-    channelId: "brightness"
+    channel: 0       // Channel index (0 = default channel)
     value: 75.0
     apply_now: true
 }
@@ -300,9 +473,9 @@ vdsm_NotificationSetOutputChannelValue {
 ```protobuf
 vdsm_NotificationDimChannel {
     dSUID: ["DEVICE_DSUID"]
-    channelId: "brightness"
-    mode: 1      // Start dimming
-    area: 1      // Up
+    channel: 0       // Channel index (0 = default channel)
+    mode: 1          // Start dimming
+    area: 1          // Up
 }
 ```
 
@@ -327,12 +500,36 @@ vdc_SendPushNotification {
     dSUID: "DEVICE_DSUID"
     changedproperties: [
         {
-            name: "inputs"
+            name: "buttonInputStates"
             elements: [
                 {
                     name: "0"
                     elements: [
-                        { name: "state", value: { v_uint64: 1 } }
+                        { name: "value", value: { v_bool: true } },
+                        { name: "clickType", value: { v_uint64: 0 } },
+                        { name: "age", value: { v_double: 0.0 } }
+                    ]
+                }
+            ]
+        }
+    ]
+}
+```
+
+Or for sensor changes:
+
+```protobuf
+vdc_SendPushNotification {
+    dSUID: "DEVICE_DSUID"
+    changedproperties: [
+        {
+            name: "sensorStates"
+            elements: [
+                {
+                    name: "0"
+                    elements: [
+                        { name: "value", value: { v_double: 22.3 } },
+                        { name: "age", value: { v_double: 0.0 } }
                     ]
                 }
             ]
