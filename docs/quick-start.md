@@ -96,6 +96,8 @@ class VdcServer:
         self.port = port
         self.sock = None
         self.dsuid = "199500440F80000000000F8001EXAMPLE"
+        self.current_session = None
+        self.devices = {}
         
     def start(self):
         """Start the vDC server"""
@@ -173,6 +175,27 @@ class VdcServer:
             return self.handle_set_property(msg)
         # Add more handlers...
         return None
+    
+    def error_response(self, message_id, code, description):
+        """Create an error response"""
+        response = Message()
+        response.type = Message.GENERIC_RESPONSE
+        response.message_id = message_id
+        response.generic_response.code = code
+        response.generic_response.description = description
+        return response
+    
+    def success_response(self, message_id):
+        """Create a success response"""
+        response = Message()
+        response.type = Message.GENERIC_RESPONSE
+        response.message_id = message_id
+        response.generic_response.code = Message.ERR_OK
+        return response
+    
+    def get_device(self, dsuid):
+        """Get device by dSUID"""
+        return self.devices.get(dsuid)
     
     def handle_hello(self, msg):
         """Handle hello request"""
@@ -322,6 +345,20 @@ def handle_get_property(self, msg):
     response.message_id = msg.message_id
     response.vdc_response_get_property.properties.extend(properties)
     return response
+
+def process_property_query(self, device, query):
+    """Process property query and return matching properties"""
+    result = []
+    for query_elem in query:
+        if hasattr(device, 'get_property'):
+            prop_value = device.get_property(query_elem.name)
+            if prop_value:
+                from genericVDC_pb2 import PropertyElement
+                prop = PropertyElement()
+                prop.name = query_elem.name
+                prop.value.CopyFrom(prop_value)
+                result.append(prop)
+    return result
 ```
 
 **6.2 Handle SetProperty**
