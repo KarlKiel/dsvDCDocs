@@ -40,7 +40,7 @@ Channels are defined in the `/channelDescriptions` array. Each channel element c
 }
 ```
 
-**Note**: `channelId` (string) is NOT part of the original API specification. Channels are accessed by their `dsIndex`.
+**Note**: The original API does NOT have a `channelId` (string) property. Channels are identified by their `dsIndex` within the `channelDescriptions` array. When performing operations like `setOutputChannelValue` or `dimChannel`, you reference channels using the `channel` parameter (integer), where 0 = default channel, 1-239 = specific channel types.
 
 ## Input Features
 

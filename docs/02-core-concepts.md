@@ -344,7 +344,7 @@ Output channels represent controllable aspects:
 ```protobuf
 vdsm_NotificationSetOutputChannelValue {
     dSUID: ["device1"]
-    channelId: "brightness"
+    channel: 0      // Channel index (0 = default channel)
     value: 75.0
 }
 ```
@@ -353,9 +353,9 @@ vdsm_NotificationSetOutputChannelValue {
 ```protobuf
 vdsm_NotificationDimChannel {
     dSUID: ["device1"]
-    channelId: "brightness"
-    mode: 1     // Start dimming
-    area: 1     // Direction: up
+    channel: 0      // Channel index (0 = default channel)
+    mode: 1         // Start dimming
+    area: 1         // Direction: up
 }
 ```
 
