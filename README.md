@@ -9,6 +9,7 @@ The vDC-API allows developers to create virtual device connectors that bridge no
 ## Documentation Structure
 
 ### Getting Started
+- [Quick Start Guide](docs/quick-start.md) - Get up and running quickly with code examples
 - [Overview](docs/overview.md) - Introduction to vDC concepts and architecture
 - [API Basics](docs/api-basics.md) - Core concepts and conventions
 
@@ -36,6 +37,10 @@ The vDC-API allows developers to create virtual device connectors that bridge no
 | **dSUID** | DigitalSTROM Unique Identifier - Unique identifier for devices and vDCs |
 
 ## Quick Start
+
+**New to vDC-API?** Start with the [Quick Start Guide](docs/quick-start.md) for a hands-on introduction with code examples.
+
+**Detailed Learning Path:**
 
 1. **Understand the Architecture**: Read the [Overview](docs/overview.md) to understand how vDCs fit into the digitalSTROM ecosystem
 2. **Learn the Protocol**: Review [Connection Management](docs/connection-management.md) to understand the communication protocol
