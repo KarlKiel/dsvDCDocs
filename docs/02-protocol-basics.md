@@ -127,7 +127,7 @@ vDC Host                                vdSM
     |    - dSUID: vDC #2 dSUID             |
     |                                      |
 ```
-vdC host announces every managed vDC via individual message with vDC dsUID as identifier to vdSM
+vdC host announces every managed vDC via individual SendAnnounceVdc messages with vDC dsUID as identifier to vdSM
 
 ### 5. Device Announcement
 
@@ -140,14 +140,6 @@ vDC Host                                vdSM
     |    - dSUID: device dSUID             |
     |    - vdc_dSUID: parent vDC dSUID     |
     |                                      |
-```
-
-**vdc_SendAnnounceDevice**:
-```protobuf
-message vdc_SendAnnounceDevice {
-    optional string dSUID = 1;      // Device dSUID
-    optional string vdc_dSUID = 2;  // Parent vDC dSUID
-}
 ```
 
 ### 6. Operational Phase
