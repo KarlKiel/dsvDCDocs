@@ -46,3 +46,10 @@ message vdc_SendAnnounceVdc {
     optional string dSUID = 1;  // Unique ID for this vDC
 }
 ```
+**vdc_SendAnnounceDevice**:
+```protobuf
+message vdc_SendAnnounceDevice {
+    optional string dSUID = 1;      // Device dSUID
+    optional string vdc_dSUID = 2;  // Parent vDC dSUID
+}
+```
