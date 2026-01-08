@@ -30,10 +30,10 @@ The digitalSTROM Virtual Device Connector API (vDC-API) is a protocol for integr
 The vdc-API uses **Protocol Buffers (protobuf)** to encode/decode the payload of the communication messages.
   
 Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
-    - **Binary encoding**: Efficient on-the-wire representation
-    - **Schema-based**: Messages defined in `.proto` files (See a .proto representation for this vdC-API in genericVDC.proto)
-    - **Strongly typed**: Type safety with automatic validation
-    - **Version-tolerant**: New fields can be added without breaking compatibility 
+- **Binary encoding**: Efficient on-the-wire representation
+- **Schema-based**: Messages defined in `.proto` files (See a .proto representation for this vdC-API in genericVDC.proto)
+- **Strongly typed**: Type safety with automatic validation
+- **Version-tolerant**: New fields can be added without breaking compatibility 
     
 All vdC-API communications use messages with a simple framing protocol:
 
