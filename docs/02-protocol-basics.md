@@ -135,6 +135,7 @@ vDC Host                                vdSM
     |    - dSUID: vDC host ID              |
     |                                      |
 ```
+The vdSM sends a RequestHello Message to vdC host and expects it to return a ResponseHello with a dSUID as identification
 
 ### 4. vDC Announcement
 
@@ -150,13 +151,7 @@ vDC Host                                vdSM
     |    - dSUID: vDC #2 dSUID             |
     |                                      |
 ```
-
-**vdc_SendAnnounceVdc**:
-```protobuf
-message vdc_SendAnnounceVdc {
-    optional string dSUID = 1;  // Unique ID for this vDC
-}
-```
+vdC host announces every managed vDC via individual message with vDC dsUID as identifier to vdSM
 
 ### 5. Device Announcement
 
