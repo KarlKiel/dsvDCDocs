@@ -44,15 +44,16 @@ All vdC-API communications use messages with a simple framing protocol:
 
 2. **Message Payload:** (as serialized Protocol Buffer message)
    - Contains message type and data:
-     General structure for the payload is for all messages to use a `Message` wrapper:
-   
-        ```protobuf
+     General structure for the payload is for all messages to use a Message wrapper:
+
+   ```protobuf
     message Message {                                            // Wrapper (only this Message Type is used as payload)
         required Type type = 1 [ default = GENERIC_RESPONSE ];   // Message Type as defined in this API (enum within .proto file)
         optional uint32 message_id = 2 [ default = 0 ];          // id for identification and correlation of messages
         optional <MessageType> <messageType> xx;                 // defined message of type <MessageType> as described in this API (and represented in .prot file)
         }
-        ```
+   ```
+   
      MessageType Names are prefixed to indicate direction:
      - **vdsm_**: Message sent by vdSM (dSS) to vDC host
      - **vdc_**: Message sent by vDC host to vdSM (dSS)
