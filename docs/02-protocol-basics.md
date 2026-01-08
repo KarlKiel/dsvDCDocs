@@ -1,10 +1,23 @@
-# Protocol Basics
 
-## Protocol Basics
+# API Basics
 
-The vDC API uses a binary protocol based on **Protocol Buffers (protobuf)** over TCP connections.
+## Introduction
 
-### Transport Layer
+The digitalSTROM Virtual Device Connector API (vDC-API) is a protocol for integrating external devices into the digitalSTROM ecosystem. This document covers the fundamental concepts and conventions used throughout the API.
+
+## Client-Server Architecture
+
+- **Server:** vDC host (your device or gateway)
+- **Client:** vdSM (virtual digitalSTROM Meter running on the digitalSTROM Server)
+- **Connection:** TCP socket initiated by the vdSM to the vDC host
+
+## Session Lifetime
+
+- A **vDC session** exists for the lifetime of the TCP connection
+- If the connection breaks, a new session must be established
+- All session state is lost when the connection is terminated
+  
+## Transport Layer
 
 - **Protocol**: TCP
 - **Default Port**: 8440 (configurable via service announcement)
@@ -12,56 +25,47 @@ The vDC API uses a binary protocol based on **Protocol Buffers (protobuf)** over
 - **Encoding**: Protobuf binary messages
 - **Framing**: Implementation-specific (often length-prefixed)
 
-The **Protocol Buffers (protobuf)** is used for message encoding:
-Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
 
-- **Binary encoding**: Efficient on-the-wire representation
-- **Schema-based**: Messages defined in `.proto` files
-- **Strongly typed**: Type safety with automatic validation
-- **Version-tolerant**: New fields can be added without breaking compatibility
-
-## Message Structure
-
-### Base Message Type
-
-All messages use the `Message` wrapper:
-
-```protobuf
-message Message {
-    required Type type = 1 [ default = GENERIC_RESPONSE ];
-    optional uint32 message_id = 2 [ default = 0 ];
-    optional GenericResponse generic_response = 3;
+### Message Structure
+The vdc-API uses **Protocol Buffers (protobuf)** to encode/decode the payload of the communication messages.
+  
+    Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
+    - **Binary encoding**: Efficient on-the-wire representation
+    - **Schema-based**: Messages defined in `.proto` files (See a .proto representation for this vdC-API in genericVDC.proto)
+    - **Strongly typed**: Type safety with automatic validation
+    - **Version-tolerant**: New fields can be added without breaking compatibility 
     
-    // Specific message types (one will be set based on 'type')
-    optional vdsm_RequestHello vdsm_request_hello = 100;
-    optional vdc_ResponseHello vdc_response_hello = 101;
-    // ... (many more message types)
-}
-```
+All communications use messages with a simple framing protocol:
 
-### Message Components
+1. **Message Header:** 2 bytes containing the message length
+   - Format: 16-bit integer in network byte order (big-endian)
+   - Maximum message length: 16,384 bytes (16 KB)
 
-1. **type**: Enum identifying the message type
-2. **message_id**: Correlation ID for request/response matching
-3. **Payload**: One of the optional message fields based on type
-
-### Message Direction
-
-Messages are prefixed to indicate direction:
-
-- **vdsm_**: Message sent by vdSM (dSS) to vDC host
-- **vdc_**: Message sent by vDC host to vdSM (dSS)
+2. **Message Payload:** (as serialized Protocol Buffer message)
+   - Contains message type and data:
+     General structure for the payload is for all messages to use a `Message` wrapper:
+   
+        ```protobuf
+    message Message {                                            // Wrapper (only this Message Type is used as payload)
+        required Type type = 1 [ default = GENERIC_RESPONSE ];   // Message Type as defined in this API (enum within .proto file)
+        optional uint32 message_id = 2 [ default = 0 ];          // id for identification and correlation of messages
+        optional <MessageType> <messageType> xx;                 // defined message of type <MessageType> as described in this API (and represented in .prot file)
+        }
+        ```
+     MessageType Names are prefixed to indicate direction:
+     - **vdsm_**: Message sent by vdSM (dSS) to vDC host
+     - **vdc_**: Message sent by vDC host to vdSM (dSS)
 
 ### Message Categories
 
 Messages fall into several categories:
 
-| Category | Description | Examples |
-|----------|-------------|----------|
-| **Request/Response** | Expects specific response |
-| **Request/GenericResponse** | Expects GenericResponse | 
-| **Send** | May send error response only | 
-| **Notification** | No response expected | 
+|          Category           |        Description           |
+|-----------------------------|------------------------------|
+| **Request/Response**        | Expects specific response    |
+| **Request/GenericResponse** | Expects GenericResponse      | 
+| **Send**                    | May send error response only | 
+| **Notification**            | No response expected         | 
 
 
 
@@ -284,7 +288,7 @@ vdSM notifies vdC host about a requested dimming operation (start upwards, start
 ```
 vDC Host                                vdSM
     |                                      |
-    | <- vdsm_NotificationCallMinScene ---|
+    | <- vdsm_NotificationCallMinScene ----|
     |   - dSUID: device dSUID(s)           |
     |   - scene: min scene number          |
     |   - group / zoneID: optional         |
@@ -345,9 +349,7 @@ vDC Host                                       vdSM
 ```
 vdSM notifies vdc host about a request to set the value of an output channel for one or several devices, which might contain managed vdSD(s) 
 
-
-
-### 8. Keep-Alive
+### 7. Keep-Alive
 
 Periodic ping/pong to verify connection:
 
@@ -361,11 +363,11 @@ vDC Host                                vdSM
     |    - dSUID: responder dSUID          |
     |                                      |
 ```
-For connection verification vdSM will periodically send SendPing messages and expects immediate SendPong messages from vdC host
+For connection verification vdSM will periodically send SendPing messages and expects immediate SendPong messages from vdC host in return
 
 ### 9. Session Termination
 
-Clean shutdown:
+1) Clean shutdown of dss/vdSM:
 
 ```
 vDC Host                                vdSM
@@ -379,19 +381,19 @@ vDC Host                                vdSM
 ```
 To make a clean temporary shutdown, the vdSM sends a SenBye message to the vdC host before shutting down the TCP connection.
 
-Or device removal (vDC triggered):
+2) Device removal (vDC triggered):
 
 ```
 vDC Host                                vdSM
     |                                      |
-    | -- vdc_SendVanish --------------->   |
+    | --- vdc_SendVanish --------------->  |
     |    - dSUID: device dSUID             |
     |    (device going offline)            |
     |                                      |
 ```
 If a managed device is going to be shut down or completely removed the vdC host will send a SendVanish message to vdSM
 
-Or device removal (vdSM triggered:
+3) Device removal (vdSM triggered):
 
 ```
 vDC Host                                vdSM
@@ -406,27 +408,17 @@ vDC Host                                vdSM
 
 ### Generic Response
 
-Many operations return a GenericResponse as Response in case of Errors:
+Errors are normally returned via GenericResponse mesaage as response in case of Errors:
 ```
 vDC Host                                vdSM
     |                                      |
-    | <------------- Hello/Bye/Vanish --   |
-    | <------------------ GetX / SetX --   |
-    | ---- Announce_X ----------------->   |
-    | <--> Notifications <-->              |
-    | <--> Scene operations <-->           |
-    |                 |
+    | <------------- <Request> ---------   |
+    |                - xxx                 |
     |                                      |
-```
-```protobuf
-message GenericResponse {
-    required ResultCode code = 1 [ default = ERR_OK ];
-    optional string description = 2;
-}
-```
-
-### Result Codes
-
+    | -------- GenericResponse -------->   |
+    |        - ResultCode: resultCode      |
+    |        - description: optional       |
+    |                                      |                                                                                 ```    
 ```protobuf
 enum ResultCode {
     ERR_OK = 0;                      // Success
@@ -455,13 +447,6 @@ enum ResultCode {
 4. **Log Errors**: Track issues for debugging
 5. **Recover Gracefully**: Don't crash on bad requests
 
-**Example Error Response**:
-```json
-{
-  "code": "ERR_NOT_FOUND",
-  "description": "Property '/device/unknown' does not exist"
-}
-```
 
 ### Common Error Scenarios
 
