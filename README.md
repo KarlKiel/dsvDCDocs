@@ -18,6 +18,7 @@ The restructured documentation is in the [`docs/`](./docs/) directory:
 
 - **[Getting Started](./docs/01-getting-started.md)** - Introduction and quick start
 - **[Property System](./docs/04-property-system.md)** - ⭐ Essential guide to property trees
+- **[Property Element Reference](./docs/property-element-reference.md)** - 🆕 Complete property catalog
 - **[Implementation Guide](./docs/10-implementation-guide.md)** - Step-by-step implementation
 - **[Protocol Buffer Reference](./docs/09-protobuf-reference.md)** - Complete message reference
 
