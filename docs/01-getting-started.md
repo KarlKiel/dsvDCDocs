@@ -117,42 +117,4 @@ The vDC API allows external devices to integrate without requiring physical digi
    vdSM ⟷ PING/PONG ⟷ vDC Host
 ```
 
-## Protocol Basics
-
-### Message Format
-
-The vDC API uses **Protocol Buffers (protobuf)** for message encoding:
-
-- Binary encoding for efficiency
-- Strongly typed messages
-- Defined by vdc-API  (The provided `genericVDC.proto` represents the message definitions)
-- Messages sent over TCP connection
-
-### Key Message Categories
-
-1. **Session Management**
-   - `vdsm_RequestHello` / `vdc_ResponseHello`
-   - `vdsm_SendBye`
-
-2. **Property Access**
-   - `vdsm_RequestGetProperty` / `vdc_ResponseGetProperty`
-   - `vdsm_RequestSetProperty`
-   - `vdc_SendPushNotification` (property changes)
-
-3. **Device Lifecycle**
-   - `vdc_SendAnnounceVdc`
-   - `vdc_SendAnnounceDevice`
-   - `vdc_SendVanish`
-   - `vdc_SendIdentify`
-
-4. **Actions/Notifications**
-   - `vdsm_NotificationCallScene`
-   - `vdsm_NotificationDimChannel`
-   - `vdsm_NotificationSetOutputChannelValue`
-   - And many more...
-
-5. **Keep-Alive**
-   - `vdsm_SendPing` / `vdc_SendPong`
-
-
 [Back to Documentation Index](./README.md) | [Next: Core Concepts →](./02-core-concepts.md)
