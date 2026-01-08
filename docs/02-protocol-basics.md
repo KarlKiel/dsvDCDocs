@@ -32,7 +32,7 @@ The vdc-API uses **Protocol Buffers (protobuf)** to encode/decode the payload of
 Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
 
 - **Binary encoding**: Efficient on-the-wire representation
-- **Schema-based**: Messages defined in `.proto` files (See a .proto representation for this vdC-API in genericVDC.proto)
+- **Schema-based**: Messages defined in `.proto` files (See a .proto representation for this vdC-API in `genericVDC.proto`)
 - **Strongly typed**: Type safety with automatic validation
 - **Version-tolerant**: New fields can be added without breaking compatibility 
     
