@@ -53,9 +53,10 @@ All vdC-API communications use messages with a simple framing protocol:
         optional <MessageType> <message> = xx;    // defined message of type <MessageType> as described in this API (and represented in .prot file)
         }
    ```
-     MessageType names are prefixed to indicate direction:
+     MessageType names are prefixed to indicate direction 
      - **vdsm_**: Message sent by vdSM (dSS) to vDC host
      - **vdc_**: Message sent by vDC host to vdSM (dSS)
+   except **Message** and **GenericResponse**: MessageTypes can be used bi-directonal
 
 ### Message Categories
 
@@ -411,15 +412,15 @@ vDC Host                                vdSM
 
 Errors are normally returned via GenericResponse mesaage as response in case of Errors:
 ```
-vDC Host                                vdSM
-    |                                      |
-    | <------------- <Request> ---------   |
-    |                - xxx                 |
-    |                                      |
-    | -------- GenericResponse -------->   |
-    |        - ResultCode: resultCode      |
-    |        - description: optional       |
-    |                                      |                                                                                 ```    
+vDC Host                                     vdSM
+    |                                          |
+    | <------------- <Request> --------------  |
+    |                - xxx                     |
+    |                                          |
+    | -------- GenericResponse ------------->  |
+    |        - ResultCode: resultCode          |
+    |        - description: optional           |
+    |        - userMessageToBeTranslated: opt. |                              |                                               ```    
 ```protobuf
 enum ResultCode {
     ERR_OK = 0;                      // Success
@@ -450,34 +451,15 @@ enum ResultCode {
 
 
 ### Common Error Scenarios
-
-| Scenario | Code | Description |
-|----------|------|-------------|
-| Property doesn't exist | ERR_NOT_FOUND | "Property 'X' not found" |
-| Read-only property | ERR_FORBIDDEN | "Property 'X' is read-only" |
-| Invalid type | ERR_INVALID_VALUE_TYPE | "Expected string, got number" |
-| Feature not supported | ERR_NOT_IMPLEMENTED | "Feature X not implemented" |
-| Device offline | ERR_SERVICE_NOT_AVAILABLE | "Device not available" |
-
-## Message ID Correlation
-
-### Request/Response Matching
-
-Use `message_id` to correlate requests with responses:
-
-```python
-# Sender (vdSM)
-request = Message()
-request.type = VDSM_REQUEST_GET_PROPERTY
-request.message_id = 42  # Unique ID
-send(request)
-
-# Receiver (vDC Host)
-response = Message()
-response.type = VDC_RESPONSE_GET_PROPERTY
-response.message_id = 42  # Same ID as request
-send(response)
-```
+``` 
+| Scenario               | Code                      | Description                  |
+|------------------------|---------------------------|-------------------------------|
+| Property doesn't exist | ERR_NOT_FOUND             | "Property 'X' not found"      |
+| Read-only property     | ERR_FORBIDDEN             | "Property 'X' is read-only"   |
+| Invalid type           | ERR_INVALID_VALUE_TYPE    | "Expected string, got number" |
+| Feature not supported  | ERR_NOT_IMPLEMENTED       | "Feature X not implemented"   |
+| Device offline         | ERR_SERVICE_NOT_AVAILABLE | "Device not available"        |
+``` 
 
 ### Message ID Guidelines
 
@@ -486,50 +468,6 @@ send(response)
 - **Zero**: message_id = 0 often used for messages without response
 - **Scope**: IDs are per-connection, not global
 
-## Message Framing
-
-### Length-Prefix Framing (Common)
-
-Most implementations use length-prefix framing:
-
-```
-[4 bytes: length][N bytes: protobuf message]
-[4 bytes: length][N bytes: protobuf message]
-...
-```
-
-Example implementation:
-```python
-def send_message(sock, message):
-    """Send a protobuf message with length prefix"""
-    data = message.SerializeToString()
-    length = len(data)
-    sock.sendall(struct.pack('<I', length))  # 4 bytes, little-endian
-    sock.sendall(data)
-
-def recv_message(sock):
-    """Receive a protobuf message with length prefix"""
-    length_data = sock.recv(4)
-    if not length_data:
-        return None
-    length = struct.unpack('<I', length_data)[0]
-    data = b''
-    while len(data) < length:
-        chunk = sock.recv(length - len(data))
-        if not chunk:
-            raise ConnectionError("Connection closed")
-        data += chunk
-    return Message.FromString(data)
-```
-
-### Alternative Framing
-
-Some implementations may use:
-- Delimiter-based (less common)
-- Fixed-size headers
-- Other framing protocols
-
-Check your specific dSS version documentation.
 
 ## API Versions
 
