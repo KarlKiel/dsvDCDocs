@@ -54,7 +54,7 @@ All vdC-API communications use messages with a simple framing protocol:
         }
    ```
    
-     MessageType Names are prefixed to indicate direction:
+     MessageType names are prefixed to indicate direction:
      - **vdsm_**: Message sent by vdSM (dSS) to vDC host
      - **vdc_**: Message sent by vDC host to vdSM (dSS)
 
