@@ -127,7 +127,7 @@ vDC Host                                vdSM
     |    - dSUID: vDC #2 dSUID             |
     |                                      |
 ```
-vdC host announces every managed vDC via individual SendAnnounceVdc messages with vDC dsUID as identifier to vdSM
+vdC host announces every hosted vDC via individual SendAnnounceVdc messages with vDC dsUID as identifier to vdSM
 
 ### 5. Device Announcement
 
@@ -141,20 +141,31 @@ vDC Host                                vdSM
     |    - vdc_dSUID: parent vDC dSUID     |
     |                                      |
 ```
+For every hosted vDC, vDC host will send a SendAnnounceDevice message for every managed device of the respective vDC
 
 ### 6. Operational Phase
 
-Normal operation with various message exchanges:
+vdSM requests:
 
 ```
-vDC Host                                vdSM
+vDC Host                                 vdSM          vDC Host                                vdSM
+    |                                      |              |                                      |
+    | <-------- vdsm_GetProperty -------   |              | <-------- vdsm_Setproperty ------    |
+    |   - dsUID: vdC host/ vdC / vdsd      |              |   - dsUID: vdC host/ vdC / vdsd      |
+    |   - query: (property tree structure) |              |   - properties: (prop. tree struct.) |
+    | --- vdc_ResponseGetProperty------>   |              |                                      |
+    |   - properties: (prop. tree struct.) |
     |                                      |
-    | <--> GetProperty/SetProperty <--->   |
-    | <--> Notifications <-->              |
+
+
+   
+    
+
     | <--> Scene operations <-->           |
-    | <--> Ping/Pong <-->                  |
+    |                 |
     |                                      |
 ```
+During normal operations vdC host and vdSM communicate via different message patterns to exchange device relevant information
 
 ### 7. Keep-Alive
 
@@ -170,6 +181,7 @@ vDC Host                                vdSM
     |    - dSUID: responder dSUID          |
     |                                      |
 ```
+For connection verification vdSM will periodically send SendPing messages and expects immediate SendPong messages from vdC host
 
 ### 8. Session Termination
 
@@ -185,8 +197,9 @@ vDC Host                                vdSM
     | Close TCP connection                 |
     |                                      |
 ```
+To make a clean temporary shutdown, the vdSM sends a SenBye message to the vdC host before shutting down the TCP connection.
 
-Or device removal:
+Or device removal (vDC triggered):
 
 ```
 vDC Host                                vdSM
@@ -196,13 +209,35 @@ vDC Host                                vdSM
     |    (device going offline)            |
     |                                      |
 ```
+If a managed device is going to be shut down or completely removed the vdC host will send a SendVanish message to vdSM
+
+Or device removal (vdSM triggered:
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <------------------ vdsm_Remove --   |
+    |    - dSUID: device dSUID             |
+    |    (device going offline)            |
+    |                                      |
+```
 
 ## Error Handling
 
 ### Generic Response
 
-Many operations return a GenericResponse:
-
+Many operations return a GenericResponse as Response in case of Errors:
+```
+vDC Host                                vdSM
+    |                                      |
+    | <------------- Hello/Bye/Vanish --   |
+    | <------------------ GetX / SetX --   |
+    | ---- Announce_X ----------------->   |
+    | <--> Notifications <-->              |
+    | <--> Scene operations <-->           |
+    |                 |
+    |                                      |
+```
 ```protobuf
 message GenericResponse {
     required ResultCode code = 1 [ default = ERR_OK ];
