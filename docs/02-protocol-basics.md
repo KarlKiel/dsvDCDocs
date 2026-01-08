@@ -420,7 +420,9 @@ vDC Host                                     vdSM
     | -------- GenericResponse ------------->  |
     |        - ResultCode: resultCode          |
     |        - description: optional           |
-    |        - userMessageToBeTranslated: opt. |                              |                                               ```    
+    |        - userMessageToBeTranslated: opt. |
+```
+
 ```protobuf
 enum ResultCode {
     ERR_OK = 0;                      // Success
@@ -451,7 +453,7 @@ enum ResultCode {
 
 
 ### Common Error Scenarios
-``` 
+
 | Scenario               | Code                      | Description                  |
 |------------------------|---------------------------|-------------------------------|
 | Property doesn't exist | ERR_NOT_FOUND             | "Property 'X' not found"      |
@@ -459,7 +461,7 @@ enum ResultCode {
 | Invalid type           | ERR_INVALID_VALUE_TYPE    | "Expected string, got number" |
 | Feature not supported  | ERR_NOT_IMPLEMENTED       | "Feature X not implemented"   |
 | Device offline         | ERR_SERVICE_NOT_AVAILABLE | "Device not available"        |
-``` 
+ 
 
 ### Message ID Guidelines
 
