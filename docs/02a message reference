@@ -12,3 +12,10 @@ message vdc_ResponseHello {
     optional string dSUID = 1;  // vDC host's dSUID
 }
 ```
+
+**vdc_SendAnnounceVdc**:
+```protobuf
+message vdc_SendAnnounceVdc {
+    optional string dSUID = 1;  // Unique ID for this vDC
+}
+```
