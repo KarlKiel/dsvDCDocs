@@ -1,21 +1,8 @@
 # Protocol Basics
 
-## Overview
+## Protocol Basics
 
-The vDC API uses a binary protocol based on **Protocol Buffers (protobuf)** over TCP connections. This document explains the protocol fundamentals, message structure, connection lifecycle, and error handling.
-
-## Protocol Foundation
-
-### Protocol Buffers
-
-Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
-
-- **Binary encoding**: Efficient on-the-wire representation
-- **Schema-based**: Messages defined in `.proto` files
-- **Strongly typed**: Type safety with automatic validation
-- **Version-tolerant**: New fields can be added without breaking compatibility
-
-The vDC API specification is defined in `genericVDC.proto`.
+The vDC API uses a binary protocol based on **Protocol Buffers (protobuf)** over TCP connections.
 
 ### Transport Layer
 
@@ -24,6 +11,14 @@ The vDC API specification is defined in `genericVDC.proto`.
 - **Connection**: Initiated by vdSM, accepted by vDC host
 - **Encoding**: Protobuf binary messages
 - **Framing**: Implementation-specific (often length-prefixed)
+
+The **Protocol Buffers (protobuf)** is used for message encoding:
+Protocol Buffers is a language-neutral, platform-neutral mechanism for serializing structured data:
+
+- **Binary encoding**: Efficient on-the-wire representation
+- **Schema-based**: Messages defined in `.proto` files
+- **Strongly typed**: Type safety with automatic validation
+- **Version-tolerant**: New fields can be added without breaking compatibility
 
 ## Message Structure
 
@@ -63,10 +58,36 @@ Messages fall into several categories:
 
 | Category | Description | Examples |
 |----------|-------------|----------|
-| **Request/Response** | Expects specific response | Hello, GetProperty |
-| **Request/GenericResponse** | Expects GenericResponse | SetProperty |
-| **Send** | May send error response only | Ping, AnnounceDevice |
-| **Notification** | No response expected | Scene operations |
+| **Request/Response** | Expects specific response |
+| **Request/GenericResponse** | Expects GenericResponse | 
+| **Send** | May send error response only | 
+| **Notification** | No response expected | 
+
+### Communication Messages Overview
+
+1. **Session Management**
+   - `vdsm_RequestHello` / `vdc_ResponseHello`
+   - `vdsm_SendBye`
+
+2. **Property Access**
+   - `vdsm_RequestGetProperty` / `vdc_ResponseGetProperty`
+   - `vdsm_RequestSetProperty`
+   - `vdc_SendPushNotification` (property changes)
+
+3. **Device Lifecycle**
+   - `vdc_SendAnnounceVdc`
+   - `vdc_SendAnnounceDevice`
+   - `vdc_SendVanish`
+   - `vdc_SendIdentify`
+
+4. **Actions/Notifications**
+   - `vdsm_NotificationCallScene`
+   - `vdsm_NotificationDimChannel`
+   - `vdsm_NotificationSetOutputChannelValue`
+   - And many more...
+
+5. **Keep-Alive**
+   - `vdsm_SendPing` / `vdc_SendPong`
 
 ## Connection Lifecycle
 
