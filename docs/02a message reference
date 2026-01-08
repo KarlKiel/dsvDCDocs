@@ -1,3 +1,30 @@
+### Communication Messages Overview
+
+1. **Session Management**
+   - `vdsm_RequestHello` / `vdc_ResponseHello`
+   - `vdsm_SendBye`
+
+2. **Property Access**
+   - `vdsm_RequestGetProperty` / `vdc_ResponseGetProperty`
+   - `vdsm_RequestSetProperty`
+   - `vdc_SendPushNotification` (property changes)
+
+3. **Device Lifecycle**
+   - `vdc_SendAnnounceVdc`
+   - `vdc_SendAnnounceDevice`
+   - `vdc_SendVanish`
+   - `vdc_SendIdentify`
+
+4. **Actions/Notifications**
+   - `vdsm_NotificationCallScene`
+   - `vdsm_NotificationDimChannel`
+   - `vdsm_NotificationSetOutputChannelValue`
+   - And many more...
+
+5. **Keep-Alive**
+   - `vdsm_SendPing` / `vdc_SendPong`
+
+
 **vdsm_RequestHello**:
 ```protobuf
 message vdsm_RequestHello {
