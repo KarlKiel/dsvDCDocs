@@ -136,21 +136,6 @@ vDC Host                                vdSM
     |                                      |
 ```
 
-**vdsm_RequestHello**:
-```protobuf
-message vdsm_RequestHello {
-    optional string dSUID = 1;       // vdSM's dSUID
-    optional uint32 api_version = 2; // API version (typically 3)
-}
-```
-
-**vdc_ResponseHello**:
-```protobuf
-message vdc_ResponseHello {
-    optional string dSUID = 1;  // vDC host's dSUID
-}
-```
-
 ### 4. vDC Announcement
 
 After handshake, announce all vDCs:
