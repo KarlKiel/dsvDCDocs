@@ -79,7 +79,6 @@ vDC Host                                vdSM
     |           <-- Discovers service --   |
     |                                      |
 ```
-
 Service announcement should include:
 - Service type: `_ds-vdc._tcp`
 - Port number (default 8440)
@@ -221,7 +220,7 @@ vDC Host                                vdSM
     |                                      |
     |     (no response expected)           |
 ```
-vdSD notifies vdC host that a scene call has been made to the dss, that might affect managed vdSD(s)
+vdSM notifies vdC host that a scene call has been made to the dss, that might affect managed vdSD(s)
 
 6) Save Scene Notification
 
@@ -235,7 +234,7 @@ vDC Host                                vdSM
     |                                      |
     |       (no response expected)         |
 ```
-vdSD notifies vdC host that a scene configuration has been created, updated or deleted, which might affect managed vdDS(s)
+vdSM notifies vdC host that a scene configuration has been created, updated or deleted, which might affect managed vdDS(s)
 
 7) Undo Scene Notification
 
@@ -249,7 +248,7 @@ vDC Host                                vdSM
     |                                      |
     |      (no response expected)          |
 ```
-vdSD notifies vdC host that there has been an undo-Scene call in the dss, which might affect managed vdSDs
+vdSM notifies vdC host that there has been an undo-Scene call in the dss, which might affect managed vdSDs
 
 8) Notification of Local Priority Change Request 
 
@@ -263,7 +262,7 @@ vDC Host                                vdSM
     |                                      |
     |       (no response expected)         |
 ```
-vdSD notifies vdC host about LocalPriority configuration changes for a scene, which might affect managed vdSD(s)
+vdSM notifies vdC host about LocalPriority configuration changes for a scene, which might affect managed vdSD(s)
 
 9) Notification of Dimming Requests 
 
