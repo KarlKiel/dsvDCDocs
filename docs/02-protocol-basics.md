@@ -48,9 +48,9 @@ All vdC-API communications use messages with a simple framing protocol:
 
    ```protobuf
     message Message {                                            // Wrapper (only this Message Type is used as payload)
-        required Type type = 1 [ default = GENERIC_RESPONSE ];   // Message Type as defined in this API (enum within .proto file)
+        required Type type = 1 [ default = GENERIC_RESPONSE ];   // Message Types defined by API (enum within .proto file)
         optional uint32 message_id = 2 [ default = 0 ];          // id for identification and correlation of messages
-        optional <MessageType> <messageType> xx;                 // defined message of type <MessageType> as described in this API (and represented in .prot file)
+        optional <MessageType> <messageType> = xx;               // defined message of type <MessageType> as described in this API (and represented in .prot file)
         }
    ```
    
