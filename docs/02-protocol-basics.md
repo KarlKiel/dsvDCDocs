@@ -145,29 +145,266 @@ For every hosted vDC, vDC host will send a SendAnnounceDevice message for every 
 
 ### 6. Operational Phase
 
-vdSM requests:
+During the Operational Phase the vdSM and vDC host exchange the regular operational messages: property reads/writes, pushes, pings, actions/notifications (scenes, dimming, identify, etc.). Below are diagrams for all operational messages (based on the vDC API reference). The diagrams follow the same style as earlier lifecycle diagrams and show direction and key payload fields.
+
+Note: "vdsm_" prefix indicates a message sent by the vdSM (dSS). "vdc_" prefix indicates a message sent by the vDC host.
+
+1) Get Property (Request/Response)
 
 ```
-vDC Host                                 vdSM          vDC Host                                vdSM
-    |                                      |              |                                      |
-    | <-------- vdsm_GetProperty -------   |              | <-------- vdsm_Setproperty ------    |
-    |   - dsUID: vdC host/ vdC / vdsd      |              |   - dsUID: vdC host/ vdC / vdsd      |
-    |   - query: (property tree structure) |              |   - properties: (prop. tree struct.) |
-    | --- vdc_ResponseGetProperty------>   |              |                                      |
+vDC Host                                vdSM
+    |                                      |
+    | <-------- vdsm_RequestGetProperty -- |
+    |   - dSUID: target entity dSUID       |
+    |   - query: (property tree structure) |
+    |                                      |
+    | --- vdc_ResponseGetProperty ------>  |
     |   - properties: (prop. tree struct.) |
     |                                      |
+```
 
+- Type: VDSM_REQUEST_GET_PROPERTY → VDC_RESPONSE_GET_PROPERTY
+- Correlate with message_id in request/response.
 
-   
-    
+2) Set Property (Request → GenericResponse)
 
-    | <--> Scene operations <-->           |
-    |                 |
+```
+vDC Host                                vdSM
+    |                                      |
+    | <------- vdsm_RequestSetProperty --- |
+    |   - dSUID: target entity dSUID       |
+    |   - properties: (prop. tree struct.) |
+    |                                      |
+    | --- vdc_GenericResponse -----------> |
+    |   - code: ERR_OK / error code        |
+    |   - description: (optional)          |
     |                                      |
 ```
-During normal operations vdC host and vdSM communicate via different message patterns to exchange device relevant information
 
-### 7. Keep-Alive
+- Type: VDSM_REQUEST_SET_PROPERTY → GenericResponse on error or success.
+
+3) Push Property (vDC → vdSM notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | -- vdc_SendPushProperty ---------->  |
+    |   - dSUID: origin entity dSUID       |
+    |   - properties: (prop. tree struct.) |
+    |                                      |
+    | (no response expected; error via GenericResponse only) |
+```
+
+- Message used by vDC host to notify vdSM of changed values.
+
+4) Generic Request (vdSM → vDC host → GenericResponse)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <---- vdsm_RequestGenericRequest --- |
+    |   - dSUID: target (optional)         |
+    |   - request: (generic payload)       |
+    |                                      |
+    | --- vdc_GenericResponse -----------> |
+    |   - code: ERR_OK / error code        |
+    |   - description: (optional)          |
+    |                                      |
+```
+
+- Type: VDSM_REQUEST_GENERIC_REQUEST → GenericResponse
+
+5) Ping / Pong (Keep-Alive / Presence polling)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <-------- vdsm_SendPing ----------   |
+    |   - dSUID: target entity dSUID       |
+    |                                      |
+    | -- vdc_SendPong ----------------->   |
+    |   - dSUID: responder entity dSUID    |
+    |                                      |
+```
+
+- Ping from vdSM, Pong from vDC host. Use for presence polling and keep-alive.
+
+6) Call Scene (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <---- vdsm_NotificationCallScene --- |
+    |   - dSUID: one or many device dSUIDs |
+    |   - scene: scene number              |
+    |   - force: boolean                   |
+    |   - group / zoneID: optional         |
+    |                                      |
+    | (no response expected)               |
+```
+
+7) Save Scene (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <---- vdsm_NotificationSaveScene --- |
+    |   - dSUID: one or many device dSUIDs |
+    |   - scene: scene number              |
+    |   - group / zoneID: optional         |
+    |                                      |
+    | (no response expected)               |
+```
+
+8) Undo Scene (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <---- vdsm_NotificationUndoScene --- |
+    |   - dSUID: one or many device dSUIDs |
+    |   - scene: scene number to undo      |
+    |   - group / zoneID: optional         |
+    |                                      |
+    | (no response expected)               |
+```
+
+9) Set Local Priority (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationSetLocalPrio ---|
+    |   - dSUID: target dSUID(s)           |
+    |   - scene: scene to check            |
+    |   - group / zoneID: optional         |
+    |                                      |
+    | (no response expected)               |
+```
+
+10) Dim Channel (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationDimChannel -----|
+    |   - dSUID: device dSUID(s)           |
+    |   - channel: channel index           |
+    |   - mode: 1 / -1 / 0                 |
+    |   - area: area restriction           |
+    |                                      |
+    | (no response expected)               |
+```
+
+11) Call Minimum Scene (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationCallMinScene ---|
+    |   - dSUID: device dSUID(s)           |
+    |   - scene: min scene number          |
+    |   - group / zoneID: optional         |
+    |                                      |
+    | (no response expected)               |
+```
+
+12) Identify (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationIdentify -------|
+    |   - dSUID: device dSUID(s)           |
+    |   - parameters: (optional)           |
+    |                                      |
+    | (no response expected)               |
+```
+
+13) Set Control Value (vdSM → vDC host, notification)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationSetControlValue -|
+    |   - dSUID: device dSUID(s)           |
+    |   - control: control identifier      |
+    |   - value: value to set              |
+    |                                      |
+    | (no response expected)               |
+```
+
+14) Set Output Channel Value (vdSM → vDC host, notification/action)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <- vdsm_NotificationSetOutputChannelValue -|
+    |   - dSUID: device dSUID(s)                |
+    |   - channel: output channel               |
+    |   - value: target output value            |
+    |                                      |
+    | (no response expected; use GenericResponse on error) |
+```
+
+15) Push Notification (vDC → vdSM, informational push)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | -- vdc_SendPushNotification ------>   |
+    |   - dSUID: origin entity dSUID        |
+    |   - notification: payload/info        |
+    |                                      |
+    | (no response expected; error via GenericResponse only) |
+```
+
+16) Device Vanish (vDC → vdSM)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | -- vdc_SendVanish ---------------->   |
+    |   - dSUID: vanished device dSUID      |
+    |                                      |
+    | (no response expected)                |
+```
+
+17) Remove Device (vdSM → vDC host → GenericResponse)
+
+```
+vDC Host                                vdSM
+    |                                      |
+    | <------ vdsm_SendRemove ------------ |
+    |   - dSUID: device dSUID              |
+    |                                      |
+    | --- vdc_GenericResponse -----------> |
+    |   - code: ERR_OK / error code        |
+    |                                      |
+```
+
+Notes:
+- For request/response messages use message_id for correlation (unique per session).
+- Notifications typically don't expect a response; when an error must be reported the receiver can send a GenericResponse (implementation-specific handling).
+- Where the API reference explicitly defines a response type, follow that (e.g. getProperty → ResponseGetProperty, setProperty → GenericResponse, getProperty error → GenericResponse).
+
+### 7. Operational Phase — quick mapping to vDC API message names
+
+- Property read: vdsm_RequestGetProperty ↔ vdc_ResponseGetProperty
+- Property write: vdsm_RequestSetProperty → GenericResponse
+- Property push: vdc_SendPushProperty → (no response)
+- Ping/pong: vdsm_SendPing ↔ vdc_SendPong
+- Actions/notifications: vdsm_NotificationCallScene, vdsm_NotificationSaveScene, vdsm_NotificationUndoScene, vdsm_NotificationSetLocalPrio, vdsm_NotificationDimChannel, vdsm_NotificationCallMinScene, vdsm_NotificationIdentify, vdsm_NotificationSetControlValue, vdsm_NotificationSetOutputChannelValue (all are notifications from vdSM to vDC host; no response expected unless error reporting is required)
+- Generic requests: vdsm_RequestGenericRequest → GenericResponse
+- Push notifications: vdc_SendPushNotification → (no response)
+
+These diagrams and mappings are created to match the operational message set described in the vDC-API reference (vDC-API.md). They should be used as a quick visual reference when implementing the Operational Phase logic or when writing integration tests / mock clients.
+
+### 7. Device Announcement / Operational Recall
+
+vdC host announces devices and then normal operational messaging (see diagrams above). Use message_id for request/response correlation and respect the notification behavior for actions/scene-related messages.
+
+### 8. Keep-Alive
 
 Periodic ping/pong to verify connection:
 
@@ -183,7 +420,7 @@ vDC Host                                vdSM
 ```
 For connection verification vdSM will periodically send SendPing messages and expects immediate SendPong messages from vdC host
 
-### 8. Session Termination
+### 9. Session Termination
 
 Clean shutdown:
 
