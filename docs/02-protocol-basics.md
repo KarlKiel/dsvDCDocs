@@ -48,12 +48,11 @@ All vdC-API communications use messages with a simple framing protocol:
 
    ```protobuf
     message Message {                             // Wrapper (only this Message Type is used as payload)
-        required Type type = 1;                   // Message Types defined by API (enum within .proto file)
+        required Type type = 1;                   // message types defined by API (enum within .proto file)
         optional uint32 message_id = 2;           // id for identification and correlation of messages
-        optional <MessageType> <messageType> = xx;// defined message of type <MessageType> as described in this API (and represented in .prot file)
+        optional <MessageType> <message> = xx;    // defined message of type <MessageType> as described in this API (and represented in .prot file)
         }
    ```
-   
      MessageType names are prefixed to indicate direction:
      - **vdsm_**: Message sent by vdSM (dSS) to vDC host
      - **vdc_**: Message sent by vDC host to vdSM (dSS)
