@@ -1,0 +1,145 @@
+## Your First vDC Implementation
+
+### Prerequisites
+
+- Understanding of your target device protocol (Hue, Sonos, etc.)
+- TCP socket programming
+- Protocol Buffer library for your language
+- Understanding of property trees (see [Property System](./04-property-system.md))
+
+### Implementation Steps
+
+1. **Set up TCP Server**
+   ```
+   - Listen on port 8440 (default, configurable)
+   - Handle incoming connections from vdSM
+   - Implement protobuf message encoding/decoding
+   ```
+
+2. **Implement Session Lifecycle**
+   ```
+   - Handle HELLO handshake
+   - Store session information
+   - Handle BYE for cleanup
+   - Implement PING/PONG keep-alive
+   ```
+
+3. **Announce Your vDC**
+   ```
+   - Create unique dSUID for your vDC
+   - Send ANNOUNCE_VDC message
+   - Populate vDC properties
+   ```
+
+4. **Announce Devices**
+   ```
+   - Discover/connect to external devices
+   - Create unique dSUID for each device
+   - Send ANNOUNCE_DEVICE for each
+   - Build property tree for each device
+   ```
+
+5. **Implement Property Access**
+   ```
+   - Handle GetProperty requests
+   - Respond with property values
+   - Handle SetProperty requests
+   - Send PushNotification for changes
+   ```
+
+6. **Implement Notifications**
+   ```
+   - Handle scene notifications
+   - Handle channel/dimming notifications
+   - Update external devices accordingly
+   ```
+
+7. **Enable Discovery**
+   ```
+   - Publish Avahi/mDNS service
+   - Type: _ds-vdc._tcp
+   - Port: 8440 (or your configured port)
+   ```
+
+### Minimal Example Flow
+
+```python
+# Pseudo-code for minimal vDC host
+
+1. Start TCP server on port 8440
+
+2. On connection from vdSM:
+   - Receive HELLO message
+   - Send HELLO response with vDC host dSUID
+   
+3. Announce vDC:
+   - Create vDC with unique dSUID
+   - Send ANNOUNCE_VDC message
+   
+4. Announce devices:
+   - For each external device:
+     - Create vdSD with unique dSUID
+     - Send ANNOUNCE_DEVICE message
+     
+5. Handle requests:
+   - On GetProperty: return property values from tree
+   - On SetProperty: update device state
+   - On Scene notifications: execute scene on device
+   - Send PushNotification when device state changes
+   
+6. Keep connection alive:
+   - Respond to PING with PONG
+   - Handle BYE for clean shutdown
+```
+
+## Next Steps
+
+Now that you understand the basics:
+
+1. **[Core Concepts](./02-core-concepts.md)** - Deeper dive into vDC architecture
+2. **[Protocol Basics](./03-protocol-basics.md)** - Detailed protocol information
+3. **[Property System](./04-property-system.md)** - **Essential**: Understanding property trees
+4. **[Implementation Guide](./10-implementation-guide.md)** - Practical implementation details
+
+## Common Questions
+
+### Q: Do I need to implement all message types?
+
+A: No. Start with the basics:
+- Hello handshake
+- Announce vDC and devices
+- GetProperty/SetProperty
+- Basic scene notifications
+- Ping/Pong
+
+You can add more features incrementally.
+
+### Q: How do I generate unique dSUIDs?
+
+A: dSUIDs are derived from device identifiers. For virtual devices, you typically use UUID v5 with a namespace. See implementation guide for details.
+
+### Q: What port should I use?
+
+A: The default is 8440, but it's configurable via Avahi/mDNS announcement.
+
+### Q: Do I need to implement discovery?
+
+A: Yes, for automatic integration. Use Avahi/mDNS to advertise your service as `_ds-vdc._tcp`.
+
+### Q: What programming languages are supported?
+
+A: Any language with:
+- TCP socket support
+- Protocol Buffers support
+- Preferably async I/O capabilities
+
+Common choices: C++, Python, Node.js, Go, Java
+
+## Resources
+
+- [Core Concepts](./02-core-concepts.md) - Detailed concepts
+- [Property System](./04-property-system.md) - Property tree structure (critical!)
+- [Protocol Buffer Reference](./09-protobuf-reference.md) - Complete message definitions
+- [Implementation Guide](./10-implementation-guide.md) - Step-by-step implementation
+
+---
