@@ -91,7 +91,49 @@
    - Respond to PING with PONG
    - Handle BYE for clean shutdown
 ```
+## Debugging Tips
 
+### Message Logging
+
+Log messages in human-readable format:
+
+```python
+def log_message(direction, message):
+    print(f"{direction} {message.type}")
+    print(f"  message_id: {message.message_id}")
+    if message.HasField('vdsm_request_get_property'):
+        print(f"  GetProperty for: {message.vdsm_request_get_property.dSUID}")
+    # ... etc
+```
+
+### Common Issues
+
+| Issue | Symptom | Solution |
+|-------|---------|----------|
+| No response | Request times out | Check message_id matching |
+| Wrong message type | Unexpected message | Verify Type enum value |
+| Parse error | Protobuf decode fails | Check framing, byte order |
+| Connection drops | Frequent reconnects | Implement ping/pong |
+| Property not found | ERR_NOT_FOUND | Verify property tree structure |
+
+### Testing Tools
+
+- **Wireshark**: Monitor TCP traffic (with protobuf dissector)
+- **protoc**: Validate .proto files
+- **Unit Tests**: Test message encoding/decoding
+- **Mock vdSM**: Create test client for development
+
+## Summary
+
+Key protocol points:
+
+1. **Protobuf over TCP**: Binary protocol, efficient encoding
+2. **Connection Lifecycle**: Discovery → Connect → Handshake → Announce → Operate
+3. **Message Types**: Requests, responses, notifications, sends
+4. **Error Handling**: GenericResponse with ResultCode
+5. **Correlation**: message_id links requests and responses
+6. **Keep-Alive**: Ping/pong maintains connection
+7. **Framing**: Typically length-prefixed messages
 ## Next Steps
 
 Now that you understand the basics:
@@ -134,6 +176,7 @@ A: Any language with:
 - Preferably async I/O capabilities
 
 Common choices: C++, Python, Node.js, Go, Java
+
 
 ## Resources
 

@@ -497,66 +497,7 @@ vDC hosts should:
 2. Return ERR_INCOMPATIBLE_API if version not supported
 3. Optionally support multiple versions
 
-## Message Type Reference
 
-### Session Management
-
-| Type | Message | Direction | Response |
-|------|---------|-----------|----------|
-| VDSM_REQUEST_HELLO | vdsm_RequestHello | vdSM → vDC | vdc_ResponseHello |
-| VDC_RESPONSE_HELLO | vdc_ResponseHello | vDC → vdSM | N/A |
-| VDSM_SEND_BYE | vdsm_SendBye | vdSM → vDC | None |
-
-### Property Access
-
-| Type | Message | Direction | Response |
-|------|---------|-----------|----------|
-| VDSM_REQUEST_GET_PROPERTY | vdsm_RequestGetProperty | vdSM → vDC | vdc_ResponseGetProperty |
-| VDC_RESPONSE_GET_PROPERTY | vdc_ResponseGetProperty | vDC → vdSM | N/A |
-| VDSM_REQUEST_SET_PROPERTY | vdsm_RequestSetProperty | vdSM → vDC | GenericResponse |
-| VDC_SEND_PUSH_PROPERTY | vdc_SendPushProperty | vDC → vdSM | Error only |
-| VDC_SEND_PUSH_NOTIFICATION | vdc_SendPushNotification | vDC → vdSM | Error only |
-
-### Device Lifecycle
-
-| Type | Message | Direction | Response |
-|------|---------|-----------|----------|
-| VDC_SEND_ANNOUNCE_VDC | vdc_SendAnnounceVdc | vDC → vdSM | Error only |
-| VDC_SEND_ANNOUNCE_DEVICE | vdc_SendAnnounceDevice | vDC → vdSM | Error only |
-| VDC_SEND_VANISH | vdc_SendVanish | vDC → vdSM | Error only |
-| VDSM_SEND_REMOVE | vdsm_SendRemove | vdSM → vDC | None |
-| VDC_SEND_IDENTIFY | vdc_SendIdentify | vDC → vdSM | Error only |
-
-### Keep-Alive
-
-| Type | Message | Direction | Response |
-|------|---------|-----------|----------|
-| VDSM_SEND_PING | vdsm_SendPing | vdSM → vDC | vdc_SendPong |
-| VDC_SEND_PONG | vdc_SendPong | vDC → vdSM | N/A |
-
-### Notifications (Scene Operations)
-
-All notifications: vdSM → vDC, no response expected
-
-| Type | Message | Purpose |
-|------|---------|---------|
-| VDSM_NOTIFICATION_CALL_SCENE | vdsm_NotificationCallScene | Activate scene |
-| VDSM_NOTIFICATION_SAVE_SCENE | vdsm_NotificationSaveScene | Save current state as scene |
-| VDSM_NOTIFICATION_UNDO_SCENE | vdsm_NotificationUndoScene | Undo scene |
-| VDSM_NOTIFICATION_SET_LOCAL_PRIO | vdsm_NotificationSetLocalPrio | Set local priority |
-| VDSM_NOTIFICATION_CALL_MIN_SCENE | vdsm_NotificationCallMinScene | Call minimum scene |
-| VDSM_NOTIFICATION_IDENTIFY | vdsm_NotificationIdentify | Identify device(s) |
-| VDSM_NOTIFICATION_SET_CONTROL_VALUE | vdsm_NotificationSetControlValue | Set control value |
-| VDSM_NOTIFICATION_DIM_CHANNEL | vdsm_NotificationDimChannel | Dim channel |
-| VDSM_NOTIFICATION_SET_OUTPUT_CHANNEL_VALUE | vdsm_NotificationSetOutputChannelValue | Set channel value |
-
-### Generic Request (API v2c+)
-
-| Type | Message | Direction | Response |
-|------|---------|-----------|----------|
-| VDSM_REQUEST_GENERIC_REQUEST | vdsm_RequestGenericRequest | vdSM → vDC | GenericResponse |
-
-## Best Practices
 
 ### Connection Management
 
@@ -586,49 +527,7 @@ All notifications: vdSM → vDC, no response expected
 3. **Authentication**: Consider implementing authentication (future)
 4. **Encryption**: Consider TLS for sensitive deployments
 
-## Debugging Tips
 
-### Message Logging
-
-Log messages in human-readable format:
-
-```python
-def log_message(direction, message):
-    print(f"{direction} {message.type}")
-    print(f"  message_id: {message.message_id}")
-    if message.HasField('vdsm_request_get_property'):
-        print(f"  GetProperty for: {message.vdsm_request_get_property.dSUID}")
-    # ... etc
-```
-
-### Common Issues
-
-| Issue | Symptom | Solution |
-|-------|---------|----------|
-| No response | Request times out | Check message_id matching |
-| Wrong message type | Unexpected message | Verify Type enum value |
-| Parse error | Protobuf decode fails | Check framing, byte order |
-| Connection drops | Frequent reconnects | Implement ping/pong |
-| Property not found | ERR_NOT_FOUND | Verify property tree structure |
-
-### Testing Tools
-
-- **Wireshark**: Monitor TCP traffic (with protobuf dissector)
-- **protoc**: Validate .proto files
-- **Unit Tests**: Test message encoding/decoding
-- **Mock vdSM**: Create test client for development
-
-## Summary
-
-Key protocol points:
-
-1. **Protobuf over TCP**: Binary protocol, efficient encoding
-2. **Connection Lifecycle**: Discovery → Connect → Handshake → Announce → Operate
-3. **Message Types**: Requests, responses, notifications, sends
-4. **Error Handling**: GenericResponse with ResultCode
-5. **Correlation**: message_id links requests and responses
-6. **Keep-Alive**: Ping/pong maintains connection
-7. **Framing**: Typically length-prefixed messages
 
 ## Next Steps
 
