@@ -5,6 +5,7 @@
 #### Syntax:
 ```
 GET {{host}}/api/v1/apartment
+Authorization: Bearer {{api-key}}
 ```
 #### Paramter:
 ```
@@ -28,6 +29,7 @@ optional
 #### Example:
 ```
 GET {{host}}/api/v1/apartment?include=installation,dsDevices,submodules,functionBlocks,zones,clusters,applications,dsServer,controllers,apiRevision,meterings
+Authorization: Bearer {{api-key}}
 ```
 
 ## 
@@ -36,6 +38,7 @@ GET {{host}}/api/v1/apartment?include=installation,dsDevices,submodules,function
 #### Syntax:
 ```
 GET {{host}}/api/v1/apartment/status
+Authorization: Bearer {{api-key}}
 ```
 optional
 
@@ -55,4 +58,4 @@ optional
 #### Example:
 ```
 GET {{host}}/api/v1/apartment/status?include=installation,dsDevices,submodules,functionBlocks,zones,clusters,applications,dsServer,controllers,apiRevision,meterings
-
+Authorization: Bearer {{api-key}}
